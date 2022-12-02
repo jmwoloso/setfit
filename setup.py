@@ -3,6 +3,8 @@ from pathlib import Path
 
 from setuptools import find_packages, setup
 
+# from src.setfit import __version__ as version
+
 
 README_TEXT = (Path(__file__).parent / "README.md").read_text(encoding="utf-8")
 
@@ -26,7 +28,7 @@ EXTRAS_REQUIRE["dev"] = combine_requirements([k for k in EXTRAS_REQUIRE])
 
 setup(
     name="setfit",
-    version="0.5.0.dev0",
+    version="0.5.0.dev1",
     description="Efficient few-shot learning with Sentence Transformers",
     long_description=README_TEXT,
     long_description_content_type="text/markdown",

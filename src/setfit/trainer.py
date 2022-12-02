@@ -42,6 +42,8 @@ class SetFitTrainer:
         metric (`str` or `Callable`, *optional*, defaults to `"accuracy"`):
             The metric to use for evaluation. If a string is provided, we treat it as the metric name and load it with default settings.
             If a callable is provided, it must take two arguments (`y_pred`, `y_test`).
+        metric_average ('str', *optional*, defaults to `"binary"`):
+            This parameter is required for multiclass/multilabel targets. If set to `None`, the scores for each class are returned. Otherwise this determines the type of averaging performed on the data. Defaults to `'binary'`.
         loss_class (`nn.Module`, *optional*, defaults to `CosineSimilarityLoss`):
             The loss function to use for contrastive training.
         num_iterations (`int`, *optional*, defaults to `20`):
@@ -81,6 +83,7 @@ class SetFitTrainer:
         eval_dataset: "Dataset" = None,
         model_init: Callable[[], "SetFitModel"] = None,
         metric: Union[str, Callable[["Dataset", "Dataset"], Dict[str, float]]] = "accuracy",
+        metric_average: Optional[str] = "binary",
         loss_class=losses.CosineSimilarityLoss,
         num_iterations: int = 20,
         num_epochs: int = 1,
@@ -102,6 +105,7 @@ class SetFitTrainer:
         self.train_dataset = train_dataset
         self.eval_dataset = eval_dataset
         self.metric = metric
+        self.metric_average = metric_average
         self.loss_class = loss_class
         self.num_iterations = num_iterations
         self.num_epochs = num_epochs
@@ -411,9 +415,11 @@ class SetFitTrainer:
 
         if isinstance(self.metric, str):
             metric_config = "multilabel" if self.model.multi_target_strategy is not None else None
+
             metric_fn = evaluate.load(self.metric, config_name=metric_config)
 
-            return metric_fn.compute(predictions=y_pred, references=y_test)
+            return metric_fn.compute(predictions=y_pred, references=y_test,
+                                     average=self.metric_average)
 
         elif callable(self.metric):
             return self.metric(y_pred, y_test)
